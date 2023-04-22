@@ -48,26 +48,19 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
             string wholeNumberString = ConvertLongToText(wholeNumber);
             string dollarsString = $"{wholeNumberString} {(wholeNumber == 1 ? dollarsTextSingular : dollarsText)}";
 
-            //if (wholeNumber == 1)
-            //{
-            //    dollarsString = dollarsString.Replace(dollarsText, dollarsTextSingular);
-            //}
-
+            // round off to two decimal places if there are more than two
             double fractionalNumber = Math.Round(number - Math.Truncate(number), 2);
 
+            // if there is no fraction (cents) then just return the whole number text
             if (fractionalNumber == 0)
             {
                 return dollarsString;
             }
 
             string fractionalNumberString = ConvertFractionToText(fractionalNumber);
-            string centsString = $"{fractionalNumberString} {centsText}";
+            string centsString = $"{fractionalNumberString} {(fractionalNumber == 0.01 ? centsTextSingular : centsText)}";
 
-            if (fractionalNumber == 0.01)
-            {
-                centsString = centsString.Replace(centsText, centsTextSingular);
-            }
-
+            // if there is no whole number (dollars) then just return the fractional number (cents)
             if (wholeNumber == 0)
             {
                 return centsString;
@@ -76,36 +69,66 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
             return $"{dollarsString} {andText} {centsString}";
         }
 
+        /// <summary>
+        /// Convert a partial number from the overall number into its text representation (uses recursive call to break up the operation into 'thousands' groups
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
         private string ConvertLongToText(long number)
         {
+            // return ones
             if (number < 10)
             {
                 return _ones[number];
             }
 
+            // return teens
             if (number < 20)
             {
                 return _tens[number - 10];
             }
 
+            // return < 100
             if (number < 100)
             {
-                string text =  _tensMultiple[number / 10];
-
-                if(number % 10 > 0)
-                {
-                    text += "-" + _ones[number % 10];
-                }
-
-                text = text.Trim();
-                return text;
+                return GetLessThan100Text(number);
             }
 
+            // return < 1000
             if (number < 1000)
             {
                 return $"{_ones[number / 100]} {hundredText} {andText} {ConvertLongToText(number % 100)}".Trim();
             }
 
+            // return all numbers >= 1000
+            return GetGreaterThanOrEqualTo1000Text(number);
+        }
+
+        /// <summary>
+        /// Logic to return text for integral numbers between 20 and 99
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        private string GetLessThan100Text(long number)
+        {
+            string text = _tensMultiple[number / 10];
+
+            if (number % 10 > 0)
+            {
+                text += "-" + _ones[number % 10];
+            }
+
+            text = text.Trim();
+            return text;
+        }
+
+        /// <summary>
+        /// Logic to return text for integral numbers >= 1000
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        private string GetGreaterThanOrEqualTo1000Text(long number)
+        {
             string groupText = string.Empty;
             bool lessThanOneHundredAndUsed = false;
 
@@ -133,22 +156,18 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
             return groupText.Trim();
         }
 
+        /// <summary>
+        /// Convert the fractional (cents) component to its text representation
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
         private string ConvertFractionToText(double number)
         {
+            // use this string format to ensure we are working with two digits so for instance 0.3 is 30 cents rather than 3 cents
             string fractionalString = number.ToString("F2");
+            // convert cents string to an int by removing decimal place and numbers before it
             int fractionalPart = int.Parse(fractionalString.Substring(fractionalString.IndexOf('.') + 1));
-
-            string[] fractionalParts = ConvertLongToText(fractionalPart).Split(' ');
-
-            if (fractionalParts.Length == 1)
-            {
-                return $"{fractionalParts[0]}";
-            }
-
-            string tensPart = fractionalParts[fractionalParts.Length - 2];
-            string onesPart = fractionalParts[fractionalParts.Length - 1];
-
-            return $"{tensPart}{(onesPart == _ones[0] ? string.Empty : "-" + onesPart)}";
+            return ConvertLongToText(fractionalPart);
         }
     }
 }
