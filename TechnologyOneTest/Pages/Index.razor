@@ -8,16 +8,16 @@
 
 <div class="row mb-2">
     <div class="col-md-3">
-        <input type="number" class="form-control" @bind="InputValue" />
+        <input type="number" class="form-control" @bind="InputValue" min="0" max="10000" />
     </div>
     <div class="col-auto">
         <button class="btn btn-primary" @onclick="SendRequestAsync">Submit Value</button>
     </div>
 </div>
 
-@if (TextError)
+@if (!string.IsNullOrWhiteSpace(TextError))
 {
-    <div class="alert alert-warning">There is an error in the number text. Please correct and try again.</div>
+    <div class="alert alert-warning">@TextError</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(ResultText))
@@ -27,20 +27,34 @@
 }
 
 @code {
-    private double? InputValue { get; set; } = 10.3;
+    private double? InputValue { get; set; }
     private string? ResultText { get; set; }
-    private bool TextError { get; set; }
+    private string? TextError { get; set; }
 
     public async Task SendRequestAsync()
     {
+        TextError = null;
+        ResultText = null;
+
         if (InputValue == null)
         {
-            TextError = true;
+            TextError = "Please enter a number and try again";
             return;
         }
 
-        TextError = false;
-        ResultText = await NumberToTextService.GetNumberAsTextAsync((double)InputValue);
+        try
+        {
+            // perform some UI level rounding
+            InputValue = Math.Round((double)InputValue, 2);
+            ResultText = await NumberToTextService.GetNumberAsTextAsync((double)InputValue);
+        }
+        catch (ArgumentOutOfRangeException argEx)
+        {
+            TextError = argEx.Message;
+        }
+        catch (Exception e)
+        {
+            TextError = "An unknown error occurred";
+        }
     }
-
 }
