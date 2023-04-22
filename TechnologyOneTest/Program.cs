@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using TechnologyOneTest.BusinessLogic.Implementation;
 using TechnologyOneTest.Data;
+using TechnologyOneTest.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<NumberToTextService>();
+builder.Services.AddSingleton<INumberConverter, NumberConverter>();
 
 var app = builder.Build();
+
+//var weatherService = builder.Services.GetRequiredService<INumberConverter>();
+//await weatherService.InitializeWeatherAsync();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

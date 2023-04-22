@@ -2,6 +2,6 @@
 {
     public interface INumberConverter
     {
-        string ConvertNumberToText(double number);
+        string ConvertCurrencyToText(double number);
     }
 }

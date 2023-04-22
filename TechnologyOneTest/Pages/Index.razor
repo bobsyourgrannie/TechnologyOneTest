@@ -1,9 +1,46 @@
 ﻿@page "/"
+@using TechnologyOneTest.Data;
+@inject NumberToTextService NumberToTextService;
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Number To Text</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Number To Text</h1>
 
-Welcome to your new app.
+<div class="row mb-2">
+    <div class="col-md-3">
+        <input type="number" class="form-control" @bind="InputValue" />
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" @onclick="SendRequestAsync">Submit Value</button>
+    </div>
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@if (TextError)
+{
+    <div class="alert alert-warning">There is an error in the number text. Please correct and try again.</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(ResultText))
+{
+
+    <p>Result: @ResultText</p>
+}
+
+@code {
+    private double? InputValue { get; set; } = 10.3;
+    private string? ResultText { get; set; }
+    private bool TextError { get; set; }
+
+    public async Task SendRequestAsync()
+    {
+        if (InputValue == null)
+        {
+            TextError = true;
+            return;
+        }
+
+        TextError = false;
+        ResultText = await NumberToTextService.GetNumberAsTextAsync((double)InputValue);
+    }
+
+}
