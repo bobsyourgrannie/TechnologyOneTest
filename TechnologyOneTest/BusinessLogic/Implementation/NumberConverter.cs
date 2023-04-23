@@ -19,8 +19,7 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
 
         const string hundredText = "HUNDRED";
 
-        private readonly string[] _lessThanTensNumberStrings = { "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE" };
-        private readonly string[] _teensNumberStrings = { "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN" };
+        private readonly string[] _lessThanTwentyNumberStrings = { "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN" };
         private readonly string[] _tensMultiplesNumberStrings = { "", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY" };
         private readonly string[] _thousandsNumberStrings = { "", "THOUSAND", "MILLION" }; // could keep adding to this list depending on how high we need to go
 
@@ -41,11 +40,11 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
             // I was not sure what to display for a value of 0 so just have a special case for it here
             if (number == 0)
             {
-                return $"{_lessThanTensNumberStrings[0]} {dollarsText}";
+                return $"{_lessThanTwentyNumberStrings[0]} {dollarsText}";
             }
 
             long wholeNumber = Convert.ToInt64(Math.Floor(number));
-            string wholeNumberString = ConvertLongToText(wholeNumber);
+            string wholeNumberString = ConvertNumberToText(wholeNumber);
             string dollarsString = $"{wholeNumberString} {(wholeNumber == 1 ? dollarsTextSingular : dollarsText)}";
 
             // round off to two decimal places if there are more than two (UI also does this operation before send)
@@ -70,38 +69,32 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
         }
 
         /// <summary>
-        /// Convert a partial number from the overall number into its text representation (uses recursive call to break up the operation into 'thousands' groups
+        /// Convert a partial number from the overall number into its text representation (this class uses recursive calls to this method to get text for each 'thousand' groups to shard code for thousands and millions (and above if we want the numbers to go higher later with a minor modification)
         /// </summary>
-        /// <param name="number"></param>
+        /// <param name="partialNumber"></param>
         /// <returns></returns>
-        private string ConvertLongToText(long number)
+        private string ConvertNumberToText(long partialNumber)
         {
-            // handle < 10
-            if (number < 10)
+            // handle up to 19
+            if (partialNumber < 20)
             {
-                return _lessThanTensNumberStrings[number];
-            }
-
-            // handle 10 to 19
-            if (number < 20)
-            {
-                return _teensNumberStrings[number - 10];
+                return _lessThanTwentyNumberStrings[partialNumber];
             }
 
             // handle 20 to 99
-            if (number < 100)
+            if (partialNumber < 100)
             {
-                return Get21To99Text(number);
+                return Get21To99Text(partialNumber);
             }
 
             // handle 100 to 999
-            if (number < 1000)
+            if (partialNumber < 1000)
             {
-                return Get100To999Text(number);
+                return Get100To999Text(partialNumber);
             }
 
             // handle all numbers >= 1000
-            return GetGreaterThanOrEqualTo1000Text(number);
+            return Get1000AndAboveText(partialNumber);
         }
 
         /// <summary>
@@ -115,7 +108,7 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
 
             if (number % 10 > 0)
             {
-                text += "-" + _lessThanTensNumberStrings[number % 10];
+                text += "-" + _lessThanTwentyNumberStrings[number % 10];
             }
 
             text = text.Trim();
@@ -129,10 +122,10 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
         /// <returns></returns>
         private string Get100To999Text(long number)
         {
-            string val = $" {_lessThanTensNumberStrings[number / 100]} {hundredText} ";
+            string val = $" {_lessThanTwentyNumberStrings[number / 100]} {hundredText} ";
             if (number % 100 > 0)
             {
-                val += $"{andText} {ConvertLongToText(number % 100)}".Trim();
+                val += $"{andText} {ConvertNumberToText(number % 100)}".Trim();
             }
             return val.Trim();
         }
@@ -142,35 +135,35 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
         /// </summary>
         /// <param name="number"></param>
         /// <returns></returns>
-        private string GetGreaterThanOrEqualTo1000Text(long number)
+        private string Get1000AndAboveText(long number)
         {
-            string groupText = string.Empty;
+            string textRepresentation = string.Empty;
             bool lessThanOneHundredAndUsed = false;
 
             for (int i = 0; number > 0; i++)
             {
                 // iterate through the number in 'thousand' groups
-                long groupNumber = number % 1000;
+                long thousandsGroupNumber = number % 1000;
 
-                if (groupNumber != 0)
+                if (thousandsGroupNumber != 0)
                 {
                     // this is to determine where to add the 'and' between a hundreds value and the 1 to 99 value text below it
-                    bool lessThanOneHundredJoiningTextRequired = i == 0 && !lessThanOneHundredAndUsed && groupNumber > 0 && groupNumber < 99;
+                    bool lessThanOneHundredJoiningTextRequired = i == 0 && !lessThanOneHundredAndUsed && thousandsGroupNumber > 0 && thousandsGroupNumber < 99;
 
-                    string groupTextTemp = $"{(lessThanOneHundredJoiningTextRequired ? $"{andText} " : string.Empty)}{ConvertLongToText(groupNumber)} {_thousandsNumberStrings[i]} ";
+                    string thousandsGroupTextRepresentation = $"{(lessThanOneHundredJoiningTextRequired ? $"{andText} " : string.Empty)}{ConvertNumberToText(thousandsGroupNumber)} {_thousandsNumberStrings[i]} ";
 
                     if (lessThanOneHundredJoiningTextRequired)
                     {
                         lessThanOneHundredAndUsed = true;
                     }
 
-                    groupText = groupTextTemp + groupText;
+                    textRepresentation = thousandsGroupTextRepresentation + textRepresentation;
                 }
 
                 number = number / 1000;
             }
 
-            return groupText.Trim();
+            return textRepresentation.Trim();
         }
 
         /// <summary>
@@ -184,7 +177,7 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
             string fractionalString = number.ToString("F2");
             // convert cents string to an int by removing decimal place and numbers before it
             int fractionalPart = int.Parse(fractionalString.Substring(fractionalString.IndexOf('.') + 1));
-            return ConvertLongToText(fractionalPart);
+            return ConvertNumberToText(fractionalPart);
         }
     }
 }
