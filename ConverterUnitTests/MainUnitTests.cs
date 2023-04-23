@@ -74,6 +74,8 @@ namespace ConverterUnitTests
                 CreateTestValues(112, "ONE HUNDRED AND TWELVE DOLLARS"),
                 CreateTestValues(1.11, "ONE DOLLAR AND ELEVEN CENTS"),
                 CreateTestValues(11.90, "ELEVEN DOLLARS AND NINETY CENTS"),
+                CreateTestValues(10101.90, "TEN THOUSAND ONE HUNDRED AND ONE DOLLARS AND NINETY CENTS"),
+                CreateTestValues(1010101.90, "ONE MILLION TEN THOUSAND ONE HUNDRED AND ONE DOLLARS AND NINETY CENTS"),
                 CreateTestValues(654321012.34, "SIX HUNDRED AND FIFTY-FOUR MILLION THREE HUNDRED AND TWENTY-ONE THOUSAND AND TWELVE DOLLARS AND THIRTY-FOUR CENTS"),
             };
         }
