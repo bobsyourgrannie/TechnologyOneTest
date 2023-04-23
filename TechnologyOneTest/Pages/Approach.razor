@@ -2,14 +2,16 @@
 @using TechnologyOneTest.Data;
 @inject NumberToTextService NumberToTextService;
 
-<PageTitle>My Approach</PageTitle>
+<PageTitle>My Approach and Documentation</PageTitle>
 
 <h1>My Approach</h1>
-
-<p>I did some experimental work on this project. I have never worked on a Blazor project and wanted to get a quick introduction to using it. I do have a background in .NET MVC so it all felt fairly familiar. The downside of this approach is that I am not heavily experienced with this framework, coming from a big Angular/ Core Web API background. The upside is that I can demonstrate that I am keen to learn new technologies and have some fun with them.</p>
-
-<p>I did start the core work of the NumberConverter class by checking some suggestions from ChatGPT. This gave me the preset text string lists so saved me some typing time. I then based my result on one of the responses that it provided but (very) heavily modified it to actually fit the unit test inputs (i.e. be demonstrably correct) as well as improve code reuse and better adhere to some of the SOLID principles.</p>
+<p>I did some experimental work on this project. I have never worked on a Blazor project and wanted to get a quick introduction to using it. I do have a background in .NET MVC so it felt fairly familiar. The downside of this approach is that I am not heavily experienced with this framework, coming from a predominantly Angular / .NET Core Web API background stack. The upside is that I can demonstrate that I am keen to learn new technologies and have some fun with them.</p>
+<p>I was unsure how high the currency values should go so I decided to allow it to go up to anything less than 1 Billion dollars. This could be easily expanded at a later time but my method would still require modification of the code rather than extension of the code. If this was a favoured approach we could probably convert the code to better accomodate the open/closed principle by converting the thousand groups (thousands, millions) into some classes classes derived from a base 'thousands' class that would be open for extension. Again, I am not sure of the expected level of code maintainability so just want to point out that I considered this option but decided against it due to time contrainsts and not over-engineering the solution.</p>
 
 <p>The simplicity of the code requirements meant that I have only used a simple interfaced design to abstract the functionality of the number converter. I then use some dependency injection to decouple the number converter from the number to text service. I couldn't see much more opportunities to use some more complex object-oriented designs. I am unsure of what level of complexity is expected but I feel it is sufficient for the solution to the problem.</p>
 
+<h1>User Innterface design</h1>
 <p>The recruiter advised that I don't spend much time on UI as it is not a big part of the role so I have just used the default Blazor appearance.</p>
+
+<h1>Test Plan</h1>
+<p>A test plan can be found in TestPlan.docx in the directory where the solution file resides.</p>

@@ -46,14 +46,15 @@ namespace ConverterUnitTests
         [Test]
         public void TestInvalidNumberAboveMax()
         {
-            const double oneTrillion = 1000000000000;
-            Assert.Throws<ArgumentOutOfRangeException>(() => _numberConverter.ConvertCurrencyToText(oneTrillion));
+            const double oneBillion = 1000000000;
+            Assert.Throws<ArgumentOutOfRangeException>(() => _numberConverter.ConvertCurrencyToText(oneBillion));
         }
 
         private List<NumberAndExpectedText> GetValidTestNumbersAndExpectedStrings()
         {
             return new List<NumberAndExpectedText>
             {
+                CreateTestValues(100000.16, "ONE HUNDRED THOUSAND DOLLARS AND SIXTEEN CENTS"),
                 CreateTestValues(99876.54, "NINETY-NINE THOUSAND EIGHT HUNDRED AND SEVENTY-SIX DOLLARS AND FIFTY-FOUR CENTS"),
                 CreateTestValues(991876.54, "NINE HUNDRED AND NINETY-ONE THOUSAND EIGHT HUNDRED AND SEVENTY-SIX DOLLARS AND FIFTY-FOUR CENTS"),
                 CreateTestValues(9876.54, "NINE THOUSAND EIGHT HUNDRED AND SEVENTY-SIX DOLLARS AND FIFTY-FOUR CENTS"),
@@ -73,7 +74,7 @@ namespace ConverterUnitTests
                 CreateTestValues(112, "ONE HUNDRED AND TWELVE DOLLARS"),
                 CreateTestValues(1.11, "ONE DOLLAR AND ELEVEN CENTS"),
                 CreateTestValues(11.90, "ELEVEN DOLLARS AND NINETY CENTS"),
-                CreateTestValues(987654321012.34, "NINE HUNDRED AND EIGHTY-SEVEN BILLION SIX HUNDRED AND FIFTY-FOUR MILLION THREE HUNDRED AND TWENTY-ONE THOUSAND AND TWELVE DOLLARS AND THIRTY-FOUR CENTS"),
+                CreateTestValues(654321012.34, "SIX HUNDRED AND FIFTY-FOUR MILLION THREE HUNDRED AND TWENTY-ONE THOUSAND AND TWELVE DOLLARS AND THIRTY-FOUR CENTS"),
             };
         }
 

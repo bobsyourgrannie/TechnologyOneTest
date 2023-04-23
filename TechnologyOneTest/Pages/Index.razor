@@ -6,14 +6,18 @@
 
 <h1>Number To Text</h1>
 
-<div class="row mb-2">
-    <div class="col-md-3">
-        <input type="number" class="form-control" @bind="InputValue" min="0" max="10000" />
+<p>Enter a number between 0 and less than one billion then click the Submit button to see it's currency text representation.</p>
+
+
+    <div class="row mb-2">
+        <div class="col-md-3">
+        <input type="number" class="form-control mb-2" @bind="InputValue" min="0" max="999999999.99" step=".01" />
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" @onclick="SendRequestAsync">Submit</button>
+        </div>
     </div>
-    <div class="col-auto">
-        <button class="btn btn-primary" @onclick="SendRequestAsync">Submit Value</button>
-    </div>
-</div>
+
 
 @if (!string.IsNullOrWhiteSpace(TextError))
 {
@@ -22,12 +26,25 @@
 
 @if (!string.IsNullOrWhiteSpace(ResultText))
 {
-
-    <p>Result: @ResultText</p>
+    <div class="alert alert-success">@ResultText</div>
 }
 
 @code {
-    private double? InputValue { get; set; }
+    private double? _inputValue;
+    private double? InputValue
+    {
+        get
+        {
+            return _inputValue;
+        }
+        set
+        {
+            ResultText = null;
+            _inputValue = RoundInputValue(value);
+        }
+    }
+
+    //private double? InputValue { get; set; }
     private string? ResultText { get; set; }
     private string? TextError { get; set; }
 
@@ -36,7 +53,7 @@
         TextError = null;
         ResultText = null;
 
-        if (InputValue == null)
+        if (!InputValue.HasValue)
         {
             TextError = "Please enter a number and try again";
             return;
@@ -56,5 +73,22 @@
         {
             TextError = "An unknown error occurred";
         }
+    }
+
+    public double? RoundInputValue(double? value)
+    {
+        if (value.HasValue)
+        {
+            return Math.Round((double)value, 2);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void InputFocused()
+    {
+        ResultText = null;
     }
 }

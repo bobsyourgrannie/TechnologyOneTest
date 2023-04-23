@@ -3,16 +3,11 @@
 namespace TechnologyOneTest.BusinessLogic.Implementation
 {
     /// <summary>
-    /// This class contains a single public method ConvertCurrencyToText that allows input of a double (>= 0 and < 1,000,000,000,000) and ret
+    /// This class contains a single public method ConvertCurrencyToText that allows input of a double (>= 0 and < 1,000,000,000) and ret
     /// </summary>
     public class NumberConverter : INumberConverter
     {
-        private const double oneTrillion = 1000000000000;
-
-        private readonly string[] _ones = { "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE" };
-        private readonly string[] _tens = { "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN" };
-        private readonly string[] _tensMultiple = { "", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY" };
-        private readonly string[] _group = { "", "THOUSAND", "MILLION", "BILLION" };
+        private const double oneBillion = 1000000000;
 
         const string dollarsText = "DOLLARS";
         const string centsText = "CENTS";
@@ -24,34 +19,39 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
 
         const string hundredText = "HUNDRED";
 
+        private readonly string[] _lessThanTensNumberStrings = { "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE" };
+        private readonly string[] _teensNumberStrings = { "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN" };
+        private readonly string[] _tensMultiplesNumberStrings = { "", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY" };
+        private readonly string[] _thousandsNumberStrings = { "", "THOUSAND", "MILLION" }; // could keep adding to this list depending on how high we need to go
+
         /// <summary>
-        /// This method allows input of a double (>= 0 and < 1,000,000,000,000) and returns the currency text representation of that number.
+        /// This method allows input of a double (>= 0 and < 1,000,000,000) and returns the currency text representation of that number.
         /// </summary>
         /// <param name="number"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public string ConvertCurrencyToText(double number)
         {
-            // Throw error if number is out of bounds for the listed text conversion strings (less than one trillion dollars)
-            if (number >= oneTrillion || number < 0)
+            // Throw error if number is out of bounds for the listed text conversion strings
+            if (number >= oneBillion || number < 0)
             {
-                throw new ArgumentOutOfRangeException("This converter only handles numbers from zero to less than one trillion");
+                throw new ArgumentOutOfRangeException("This converter only handles numbers from zero to less than one billion");
             }
 
             // I was not sure what to display for a value of 0 so just have a special case for it here
             if (number == 0)
             {
-                return $"{_ones[0]} {dollarsText}";
+                return $"{_lessThanTensNumberStrings[0]} {dollarsText}";
             }
 
             long wholeNumber = Convert.ToInt64(Math.Floor(number));
             string wholeNumberString = ConvertLongToText(wholeNumber);
             string dollarsString = $"{wholeNumberString} {(wholeNumber == 1 ? dollarsTextSingular : dollarsText)}";
 
-            // round off to two decimal places if there are more than two
+            // round off to two decimal places if there are more than two (UI also does this operation before send)
             double fractionalNumber = Math.Round(number - Math.Truncate(number), 2);
 
-            // if there is no fraction (cents) then just return the whole number text
+            // if there is no fraction (cents) then just return the whole number (dollars) string
             if (fractionalNumber == 0)
             {
                 return dollarsString;
@@ -60,7 +60,7 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
             string fractionalNumberString = ConvertFractionToText(fractionalNumber);
             string centsString = $"{fractionalNumberString} {(fractionalNumber == 0.01 ? centsTextSingular : centsText)}";
 
-            // if there is no whole number (dollars) then just return the fractional number (cents)
+            // if there is no whole number (dollars) then just return the fractional number (cents) string
             if (wholeNumber == 0)
             {
                 return centsString;
@@ -76,31 +76,31 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
         /// <returns></returns>
         private string ConvertLongToText(long number)
         {
-            // return ones
+            // handle < 10
             if (number < 10)
             {
-                return _ones[number];
+                return _lessThanTensNumberStrings[number];
             }
 
-            // return teens
+            // handle 10 to 19
             if (number < 20)
             {
-                return _tens[number - 10];
+                return _teensNumberStrings[number - 10];
             }
 
-            // return < 100
+            // handle 20 to 99
             if (number < 100)
             {
-                return GetLessThan100Text(number);
+                return Get21To99Text(number);
             }
 
-            // return < 1000
+            // handle 100 to 999
             if (number < 1000)
             {
-                return $"{_ones[number / 100]} {hundredText} {andText} {ConvertLongToText(number % 100)}".Trim();
+                return Get100To999Text(number);
             }
 
-            // return all numbers >= 1000
+            // handle all numbers >= 1000
             return GetGreaterThanOrEqualTo1000Text(number);
         }
 
@@ -109,17 +109,32 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
         /// </summary>
         /// <param name="number"></param>
         /// <returns></returns>
-        private string GetLessThan100Text(long number)
+        private string Get21To99Text(long number)
         {
-            string text = _tensMultiple[number / 10];
+            string text = _tensMultiplesNumberStrings[number / 10];
 
             if (number % 10 > 0)
             {
-                text += "-" + _ones[number % 10];
+                text += "-" + _lessThanTensNumberStrings[number % 10];
             }
 
             text = text.Trim();
             return text;
+        }
+
+        /// <summary>
+        /// Logic to return text for integral numbers between 100 and 999
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        private string Get100To999Text(long number)
+        {
+            string val = $" {_lessThanTensNumberStrings[number / 100]} {hundredText} ";
+            if (number % 100 > 0)
+            {
+                val += $"{andText} {ConvertLongToText(number % 100)}".Trim();
+            }
+            return val.Trim();
         }
 
         /// <summary>
@@ -134,15 +149,17 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
 
             for (int i = 0; number > 0; i++)
             {
+                // iterate through the number in 'thousand' groups
                 long groupNumber = number % 1000;
 
                 if (groupNumber != 0)
                 {
-                    bool lessThanOneHundredAndRequired = i == 0 && !lessThanOneHundredAndUsed && groupNumber > 0 && groupNumber < 99;
+                    // this is to determine where to add the 'and' between a hundreds value and the 1 to 99 value text below it
+                    bool lessThanOneHundredJoiningTextRequired = i == 0 && !lessThanOneHundredAndUsed && groupNumber > 0 && groupNumber < 99;
 
-                    string groupTextTemp = $"{(lessThanOneHundredAndRequired ? $"{andText} " : string.Empty)}{ConvertLongToText(groupNumber)} {_group[i]} ";
+                    string groupTextTemp = $"{(lessThanOneHundredJoiningTextRequired ? $"{andText} " : string.Empty)}{ConvertLongToText(groupNumber)} {_thousandsNumberStrings[i]} ";
 
-                    if (lessThanOneHundredAndRequired)
+                    if (lessThanOneHundredJoiningTextRequired)
                     {
                         lessThanOneHundredAndUsed = true;
                     }
@@ -150,7 +167,7 @@ namespace TechnologyOneTest.BusinessLogic.Implementation
                     groupText = groupTextTemp + groupText;
                 }
 
-                number /= 1000;
+                number = number / 1000;
             }
 
             return groupText.Trim();
